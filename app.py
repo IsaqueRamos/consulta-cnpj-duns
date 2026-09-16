@@ -8,20 +8,16 @@ st.set_page_config(
     layout="centered"
 )
 
-# Estilização CSS personalizada para Tema Escuro (Sem fundo branco)
+# Estilização CSS personalizada para Tema Escuro Profissional
 st.markdown("""
     <style>
-    /* Fundo geral da aplicação em cinza escuro */
     .stApp {
         background-color: #0e1117;
         color: #e0e6ed;
     }
-    
-    /* Ocultar cabeçalho padrão e rodapé do Streamlit */
     #MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
     
-    /* Banner do topo estilizado */
     .header-container {
         background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
         padding: 24px;
@@ -35,9 +31,6 @@ st.markdown("""
         font-size: 26px;
         font-weight: 700;
         margin: 0;
-        display: flex;
-        align-items: center;
-        gap: 10px;
         color: #38bdf8;
     }
     .header-subtitle {
@@ -46,7 +39,6 @@ st.markdown("""
         margin-top: 6px;
     }
 
-    /* Botão de consulta principal */
     .stButton>button {
         width: 100%;
         background-color: #2563eb;
@@ -63,14 +55,12 @@ st.markdown("""
         color: #ffffff;
     }
 
-    /* Customização dos blocos de código com a folha de cópia (Sem fundo branco) */
     .stCodeBlock {
         background-color: #1e293b !important;
         border: 1px solid #334155 !important;
         border-radius: 8px !important;
     }
 
-    /* Input de texto com fundo escuro */
     .stTextInput>div>div>input {
         background-color: #1e293b;
         color: #f8fafc;
@@ -81,7 +71,14 @@ st.markdown("""
         border-color: #38bdf8;
     }
 
-    /* Card de sucesso final */
+    .duns-form-card {
+        background-color: #1e293b;
+        padding: 20px;
+        border-radius: 10px;
+        border: 1px solid #334155;
+        margin-bottom: 20px;
+    }
+
     .duns-success-box {
         background-color: #064e3b;
         border: 1px solid #059669;
@@ -93,18 +90,18 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# Cabeçalho Principal (Banner Dark)
+# Cabeçalho Principal
 st.markdown("""
     <div class="header-container">
         <div class="header-title">🏢 Assistente de Cadastro DUNS</div>
-        <div class="header-subtitle">Consulte dados cadastrais automaticamente e prepare as informações para a busca na Dun & Bradstreet.</div>
+        <div class="header-subtitle">Digite o CNPJ para preencher os campos de pesquisa do DUNS automaticamente.</div>
     </div>
 """, unsafe_allow_html=True)
 
-# Área do Formulário de Entrada
+# Entrada do CNPJ
 with st.container():
     cnpj_input = st.text_input("Número do CNPJ", placeholder="Digite apenas os 14 números (ex: 14921638000170)", max_chars=18)
-    btn_consultar = st.button("🔍 Consultar CNPJ")
+    btn_consultar = st.button("🔍 Consultar CNPJ & Gerar Campos DUNS")
 
 def consultar_cnpj(cnpj):
     cnpj_limpo = ''.join(filter(str.isdigit, cnpj))
@@ -124,21 +121,21 @@ def consultar_cnpj(cnpj):
         return None, f"Falha na conexão com o servidor: {str(e)}"
 
 if btn_consultar and cnpj_input:
-    with st.spinner("Buscando dados cadastrais..."):
+    with st.spinner("Buscando dados na Receita Federal..."):
         dados, erro = consultar_cnpj(cnpj_input)
         if erro:
             st.error(erro)
         else:
             st.session_state['dados_empresa'] = dados
 
-# Exibição do Resultado
+# Formulario de Pesquisa DUNS gerado na página
 if 'dados_empresa' in st.session_state:
     dados = st.session_state['dados_empresa']
     
     st.markdown("---")
-    st.success("✅ **Dados da empresa carregados com sucesso!** Use o ícone de folha (📋) para copiar os dados desejados.")
+    st.success("✅ **Campos do D-U-N-S Search preenchidos na página!** Use as folhinhas (📋) para copiar rapidamente.")
 
-    # Extração e formatação dos campos
+    # Extração de dados
     razao_social = dados.get('razao_social', '')
     logradouro = dados.get('logradouro', '')
     numero = dados.get('numero', '')
@@ -149,33 +146,36 @@ if 'dados_empresa' in st.session_state:
     
     endereco_linha = f"{logradouro}, {numero} - {bairro}"
 
-    # Campos formatados com botão de cópia nativo
-    st.markdown('### 📌 Dados Formatados para a Tela D-U-N-S Search')
+    # Formulário visual "D-U-N-S Search" dentro da página
+    st.markdown('### 📑 Formulário D-U-N-S Search (Dados Extraídos)')
     
-    st.code(razao_social, language=None)
-    st.caption("Full Legal Business Name")
+    st.markdown("**Country:**")
+    st.code("Brazil", language=None)
 
+    st.markdown("**Full Legal Business Name:**")
+    st.code(razao_social, language=None)
+
+    st.markdown("**Address:**")
     st.code(endereco_linha, language=None)
-    st.caption("Address")
 
     col1, col2, col3 = st.columns(3)
     with col1:
+        st.markdown("**City:**")
         st.code(municipio, language=None)
-        st.caption("City")
     with col2:
+        st.markdown("**State / Region / Territory:**")
         st.code(uf, language=None)
-        st.caption("State / Region")
     with col3:
+        st.markdown("**Postal Code:**")
         st.code(cep, language=None)
-        st.caption("Postal Code")
 
     st.markdown("---")
     
-    # Redirecionamento para a página AppleDev da D&B
+    # Redirecionamento
     url_formulario_duns = "https://support.dnb.com/?CUST=APPLEDEV"
     
-    st.markdown("### 🎯 Redirecionamento para a Busca")
-    st.info("Copie os dados acima usando os botões de folha e clique no botão abaixo para abrir o formulário:")
+    st.markdown("### 🎯 Finalizar Busca no Portal")
+    st.info("Clique no botão abaixo para abrir a tela de validação da D&B:")
     
     st.markdown(f'''
         <a href="{url_formulario_duns}" target="_blank" style="text-decoration: none;">
@@ -191,7 +191,7 @@ if 'dados_empresa' in st.session_state:
                 cursor: pointer;
                 box-shadow: 0 4px 10px rgba(5, 150, 105, 0.3);
                 transition: all 0.2s ease;">
-                🌐 Abrir Formulário D-U-N-S Search (AppleDev)
+                🌐 Enviar para a Consulta Oficial (D-U-N-S Search)
             </button>
         </a>
     ''', unsafe_allow_html=True)
@@ -199,8 +199,8 @@ if 'dados_empresa' in st.session_state:
     st.write("")
     st.write("")
     
-    # Campo final de registro do DUNS
-    duns_numero = st.text_input("Número DUNS localizado:", placeholder="Cole o código DUNS retornado para registrar...")
+    # Registro final
+    duns_numero = st.text_input("Número DUNS retornado:", placeholder="Cole o código DUNS encontrado aqui para registrar...")
     
     if duns_numero:
         st.markdown(f'''
