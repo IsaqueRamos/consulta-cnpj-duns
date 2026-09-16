@@ -1,6 +1,5 @@
 import streamlit as st
 import requests
-import urllib.parse
 
 st.set_page_config(
     page_title="Consulta DUNS por CNPJ",
@@ -31,12 +30,12 @@ st.markdown('''
 ''', unsafe_allow_html=True)
 
 st.title("🏢 Localizador de DUNS via CNPJ")
-st.markdown("Digite o CNPJ abaixo para extrair os dados e consultar a base da Dun & Bradstreet.")
+st.markdown("Digite o CNPJ abaixo para extrair os dados e consultar no Portal D&B Support.")
 
 st.divider()
 
 cnpj_input = st.text_input("Número do CNPJ", placeholder="Digite apenas números (ex: 14921638000170)", max_chars=18)
-btn_consultar = st.button("🔍 Consultar DUNS")
+btn_consultar = st.button("🔍 Consultar CNPJ")
 
 def consultar_cnpj(cnpj):
     cnpj_limpo = ''.join(filter(str.isdigit, cnpj))
@@ -86,21 +85,16 @@ if 'dados_empresa' in st.session_state:
     
     st.divider()
     
-    # Montagem de busca limpa no Google focada em diretórios públicos do DUNS
-    razao_social = dados.get('razao_social', '')
-    cnpj_num = dados.get('cnpj', '')
+    # Link direto para a página de suporte da D&B
+    url_support_dnb = "https://support.dnb.com/Support_Home"
     
-    # Query flexível: Razão Social + DUNS + CNPJ (sem travas rígidas de aspas)
-    query_busca = f"DUNS number {razao_social} {cnpj_num}"
-    url_google_clean = f"https://www.google.com/search?q={urllib.parse.quote(query_busca)}"
-    
-    st.subheader("🎯 Localizar Registro DUNS")
-    st.info("Clique no botão abaixo para abrir a pesquisa com o nome da empresa e CNPJ já configurados para encontrar a página de perfil da D&B:")
+    st.subheader("🎯 Acessar Portal D&B Support")
+    st.info("Utilize os dados acima para preencher na tela do D&B Support. Clique no botão abaixo para abrir o portal:")
     
     st.markdown(f'''
-        <a href="{url_google_clean}" target="_blank">
+        <a href="{url_support_dnb}" target="_blank">
             <button style="width:100%; background-color:#198754; color:white; padding:12px; font-weight:bold; border:none; border-radius:8px; cursor:pointer;">
-                🌐 Buscar DUNS da Empresa no Google
+                🌐 Abrir Portal D&B Support Home
             </button>
         </a>
     ''', unsafe_allow_html=True)
@@ -112,8 +106,8 @@ if 'dados_empresa' in st.session_state:
         st.markdown(f'''
         <div class="duns-box">
             <h4>✅ Registro Concluído</h4>
-            <p><strong>Empresa:</strong> {razao_social}</p>
-            <p><strong>CNPJ:</strong> {cnpj_num}</p>
+            <p><strong>Empresa:</strong> {dados.get('razao_social')}</p>
+            <p><strong>CNPJ:</strong> {dados.get('cnpj')}</p>
             <p><strong>Número DUNS:</strong> <code>{duns_numero}</code></p>
         </div>
         ''', unsafe_allow_html=True)
