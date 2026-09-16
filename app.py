@@ -30,7 +30,7 @@ st.markdown('''
 ''', unsafe_allow_html=True)
 
 st.title("🏢 Localizador de DUNS via CNPJ")
-st.markdown("Digite o CNPJ abaixo para extrair os dados e consultar no Portal D&B Support.")
+st.markdown("Digite o CNPJ abaixo para extrair os dados e preencher na tela do D-U-N-S Search.")
 
 st.divider()
 
@@ -66,35 +66,42 @@ if 'dados_empresa' in st.session_state:
     dados = st.session_state['dados_empresa']
     st.success("✅ CNPJ localizado com sucesso!")
     
-    st.subheader("📌 Dados da Empresa")
-    col_a, col_b = st.columns(2)
-    with col_a:
-        st.write(f"**Razão Social:** {dados.get('razao_social', 'N/A')}")
-        st.write(f"**CNPJ:** {dados.get('cnpj', 'N/A')}")
+    # Extração de campos para o formulário D-U-N-S Search
+    razao_social = dados.get('razao_social', '')
+    logradouro = dados.get('logradouro', '')
+    numero = dados.get('numero', '')
+    bairro = dados.get('bairro', '')
+    municipio = dados.get('municipio', '')
+    uf = dados.get('uf', '')
+    cep = dados.get('cep', '')
     
-    with col_b:
-        logradouro = dados.get('logradouro', '')
-        numero = dados.get('numero', '')
-        bairro = dados.get('bairro', '')
-        municipio = dados.get('municipio', '')
-        uf = dados.get('uf', '')
-        cep = dados.get('cep', '')
-        
-        endereco_completo = f"{logradouro}, {numero} - {bairro}, {municipio}/{uf} - CEP: {cep}"
-        st.write(f"**Endereço:** {endereco_completo}")
+    endereco_linha = f"{logradouro}, {numero} - {bairro}"
+    
+    st.subheader("📌 Dados da Empresa para a Tela de Busca")
+    
+    # Exibição dos campos fáceis de selecionar e copiar
+    st.text_input("Full Legal Business Name:", value=razao_social)
+    st.text_input("Address:", value=endereco_linha)
+    col1, col2, col3 = st.columns(3)
+    with col1:
+        st.text_input("City:", value=municipio)
+    with col2:
+        st.text_input("State / Region:", value=uf)
+    with col3:
+        st.text_input("Postal Code:", value=cep)
     
     st.divider()
     
-    # Link direto para a página de suporte da D&B
-    url_support_dnb = "https://support.dnb.com/Support_Home"
+    # Link direto fornecido do formulário D&B Apple Developer
+    url_formulario_duns = "https://support.dnb.com/?CUST=APPLEDEV"
     
-    st.subheader("🎯 Acessar Portal D&B Support")
-    st.info("Utilize os dados acima para preencher na tela do D&B Support. Clique no botão abaixo para abrir o portal:")
+    st.subheader("🎯 Abrir Formulário D-U-N-S Search")
+    st.info("Copie os dados gerados nos campos acima e clique no botão para abrir a tela de busca do DUNS:")
     
     st.markdown(f'''
-        <a href="{url_support_dnb}" target="_blank">
+        <a href="{url_formulario_duns}" target="_blank">
             <button style="width:100%; background-color:#198754; color:white; padding:12px; font-weight:bold; border:none; border-radius:8px; cursor:pointer;">
-                🌐 Abrir Portal D&B Support Home
+                🌐 Abrir Formulário D-U-N-S Search (AppleDev)
             </button>
         </a>
     ''', unsafe_allow_html=True)
@@ -106,7 +113,7 @@ if 'dados_empresa' in st.session_state:
         st.markdown(f'''
         <div class="duns-box">
             <h4>✅ Registro Concluído</h4>
-            <p><strong>Empresa:</strong> {dados.get('razao_social')}</p>
+            <p><strong>Empresa:</strong> {razao_social}</p>
             <p><strong>CNPJ:</strong> {dados.get('cnpj')}</p>
             <p><strong>Número DUNS:</strong> <code>{duns_numero}</code></p>
         </div>
