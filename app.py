@@ -31,7 +31,7 @@ st.markdown('''
 ''', unsafe_allow_html=True)
 
 st.title("🏢 Localizador de DUNS via CNPJ")
-st.markdown("Digite o CNPJ abaixo para extrair os dados e consultar na base da Dun & Bradstreet.")
+st.markdown("Digite o CNPJ abaixo para extrair os dados e consultar a base da Dun & Bradstreet.")
 
 st.divider()
 
@@ -86,20 +86,21 @@ if 'dados_empresa' in st.session_state:
     
     st.divider()
     
-    # Redirecionamento direto para o buscador oficial do portal D&B / Cial D&B
+    # Montagem de busca limpa no Google focada em diretórios públicos do DUNS
     razao_social = dados.get('razao_social', '')
-    termo_encoded = urllib.parse.quote(razao_social)
+    cnpj_num = dados.get('cnpj', '')
     
-    # URL oficial de pesquisa do diretório Cial Dun & Bradstreet
-    url_portal_dnb = f"https://www.cialdnb.com/pt-br/search/?q={termo_encoded}"
+    # Query flexível: Razão Social + DUNS + CNPJ (sem travas rígidas de aspas)
+    query_busca = f"DUNS number {razao_social} {cnpj_num}"
+    url_google_clean = f"https://www.google.com/search?q={urllib.parse.quote(query_busca)}"
     
-    st.subheader("🎯 Buscar no Portal Dun & Bradstreet")
-    st.info("Clique no botão abaixo para abrir a pesquisa oficial dentro do portal Cial D&B já com o nome da empresa preenchido:")
+    st.subheader("🎯 Localizar Registro DUNS")
+    st.info("Clique no botão abaixo para abrir a pesquisa com o nome da empresa e CNPJ já configurados para encontrar a página de perfil da D&B:")
     
     st.markdown(f'''
-        <a href="{url_portal_dnb}" target="_blank">
+        <a href="{url_google_clean}" target="_blank">
             <button style="width:100%; background-color:#198754; color:white; padding:12px; font-weight:bold; border:none; border-radius:8px; cursor:pointer;">
-                🌐 Abrir Busca Oficial no Portal Cial D&B
+                🌐 Buscar DUNS da Empresa no Google
             </button>
         </a>
     ''', unsafe_allow_html=True)
@@ -112,7 +113,7 @@ if 'dados_empresa' in st.session_state:
         <div class="duns-box">
             <h4>✅ Registro Concluído</h4>
             <p><strong>Empresa:</strong> {razao_social}</p>
-            <p><strong>CNPJ:</strong> {dados.get('cnpj')}</p>
+            <p><strong>CNPJ:</strong> {cnpj_num}</p>
             <p><strong>Número DUNS:</strong> <code>{duns_numero}</code></p>
         </div>
         ''', unsafe_allow_html=True)
