@@ -3,31 +3,33 @@ import requests
 
 # Configuração da página
 st.set_page_config(
-    page_title="Gerenciador DUNS & CNPJ",
+    page_title="Assistente de Cadastro DUNS",
     page_icon="🏢",
     layout="centered"
 )
 
-# Estilização CSS avançada para layout moderno e profissional
+# Estilização CSS personalizada para Tema Escuro (Sem fundo branco)
 st.markdown("""
     <style>
-    /* Fundo da página e tipografia */
+    /* Fundo geral da aplicação em cinza escuro */
     .stApp {
-        background-color: #f4f6f9;
+        background-color: #0e1117;
+        color: #e0e6ed;
     }
     
-    /* Ocultar elementos desnecessários do Streamlit */
+    /* Ocultar cabeçalho padrão e rodapé do Streamlit */
     #MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
     
-    /* Header estilizado */
+    /* Banner do topo estilizado */
     .header-container {
-        background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%);
+        background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
         padding: 24px;
         border-radius: 12px;
-        color: white;
+        color: #ffffff;
         margin-bottom: 24px;
-        box-shadow: 0 4px 12px rgba(13, 110, 253, 0.15);
+        border: 1px solid #334155;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
     }
     .header-title {
         font-size: 26px;
@@ -36,46 +38,54 @@ st.markdown("""
         display: flex;
         align-items: center;
         gap: 10px;
+        color: #38bdf8;
     }
     .header-subtitle {
         font-size: 14px;
-        opacity: 0.9;
+        color: #94a3b8;
         margin-top: 6px;
     }
 
-    /* Estilização dos botões principais */
+    /* Botão de consulta principal */
     .stButton>button {
         width: 100%;
-        background-color: #0d6efd;
-        color: white;
+        background-color: #2563eb;
+        color: #ffffff;
         font-weight: 600;
         font-size: 15px;
         border-radius: 8px;
         height: 2.8em;
         border: none;
         transition: all 0.2s ease;
-        box-shadow: 0 2px 6px rgba(13, 110, 253, 0.2);
     }
     .stButton>button:hover {
-        background-color: #0b5ed7;
-        box-shadow: 0 4px 10px rgba(13, 110, 253, 0.3);
+        background-color: #1d4ed8;
+        color: #ffffff;
     }
 
-    /* Card personalizado para visualização dos resultados */
-    .custom-card {
-        background-color: #ffffff;
-        padding: 20px;
-        border-radius: 12px;
-        border: 1px solid #e3e8ee;
-        box-shadow: 0 4px 10px rgba(0,0,0,0.03);
-        margin-bottom: 20px;
+    /* Customização dos blocos de código com a folha de cópia (Sem fundo branco) */
+    .stCodeBlock {
+        background-color: #1e293b !important;
+        border: 1px solid #334155 !important;
+        border-radius: 8px !important;
     }
 
-    /* Box de resultado DUNS final */
+    /* Input de texto com fundo escuro */
+    .stTextInput>div>div>input {
+        background-color: #1e293b;
+        color: #f8fafc;
+        border: 1px solid #334155;
+        border-radius: 8px;
+    }
+    .stTextInput>div>div>input:focus {
+        border-color: #38bdf8;
+    }
+
+    /* Card de sucesso final */
     .duns-success-box {
-        background-color: #f0fdf4;
-        border: 1px solid #bbf7d0;
-        border-left: 6px solid #16a34a;
+        background-color: #064e3b;
+        border: 1px solid #059669;
+        border-left: 6px solid #10b981;
         padding: 18px;
         border-radius: 10px;
         margin-top: 15px;
@@ -83,10 +93,10 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# Cabeçalho Principal (Banner)
+# Cabeçalho Principal (Banner Dark)
 st.markdown("""
     <div class="header-container">
-        <div class="header-title">🏢 Localizador de DUNS via CNPJ</div>
+        <div class="header-title">🏢 Assistente de Cadastro DUNS</div>
         <div class="header-subtitle">Consulte dados cadastrais automaticamente e prepare as informações para a busca na Dun & Bradstreet.</div>
     </div>
 """, unsafe_allow_html=True)
@@ -126,7 +136,7 @@ if 'dados_empresa' in st.session_state:
     dados = st.session_state['dados_empresa']
     
     st.markdown("---")
-    st.success("✅ **Dados da empresa carregados com sucesso!** Use o ícone de folha (📋) no canto de cada campo para copiar os dados.")
+    st.success("✅ **Dados da empresa carregados com sucesso!** Use o ícone de folha (📋) para copiar os dados desejados.")
 
     # Extração e formatação dos campos
     razao_social = dados.get('razao_social', '')
@@ -139,7 +149,7 @@ if 'dados_empresa' in st.session_state:
     
     endereco_linha = f"{logradouro}, {numero} - {bairro}"
 
-    # Card com os campos organizados e botão de cópia
+    # Campos formatados com botão de cópia nativo
     st.markdown('### 📌 Dados Formatados para a Tela D-U-N-S Search')
     
     st.code(razao_social, language=None)
@@ -161,17 +171,17 @@ if 'dados_empresa' in st.session_state:
 
     st.markdown("---")
     
-    # Redirecionamento para o formulário D&B AppleDev
+    # Redirecionamento para a página AppleDev da D&B
     url_formulario_duns = "https://support.dnb.com/?CUST=APPLEDEV"
     
     st.markdown("### 🎯 Redirecionamento para a Busca")
-    st.info("Copie os dados acima usando os botões de folha e clique no botão abaixo para abrir o formulário em nova aba:")
+    st.info("Copie os dados acima usando os botões de folha e clique no botão abaixo para abrir o formulário:")
     
     st.markdown(f'''
         <a href="{url_formulario_duns}" target="_blank" style="text-decoration: none;">
             <button style="
                 width: 100%;
-                background: linear-gradient(135deg, #198754 0%, #146c43 100%);
+                background: linear-gradient(135deg, #059669 0%, #047857 100%);
                 color: white;
                 padding: 12px;
                 font-weight: 600;
@@ -179,7 +189,7 @@ if 'dados_empresa' in st.session_state:
                 border: none;
                 border-radius: 8px;
                 cursor: pointer;
-                box-shadow: 0 4px 10px rgba(25, 135, 84, 0.2);
+                box-shadow: 0 4px 10px rgba(5, 150, 105, 0.3);
                 transition: all 0.2s ease;">
                 🌐 Abrir Formulário D-U-N-S Search (AppleDev)
             </button>
@@ -195,9 +205,9 @@ if 'dados_empresa' in st.session_state:
     if duns_numero:
         st.markdown(f'''
         <div class="duns-success-box">
-            <h4 style="margin:0; color: #15803d;">✅ Registro Concluído com Sucesso!</h4>
-            <p style="margin-top: 8px; margin-bottom: 4px; color: #1e293b;"><strong>Razão Social:</strong> {razao_social}</p>
-            <p style="margin-bottom: 4px; color: #1e293b;"><strong>CNPJ:</strong> {dados.get('cnpj')}</p>
-            <p style="margin-bottom: 0; color: #1e293b;"><strong>Código DUNS:</strong> <code style="font-size: 16px; background-color: #dcfce7; padding: 2px 8px; border-radius: 4px; color: #15803d;">{duns_numero}</code></p>
+            <h4 style="margin:0; color: #a7f3d0;">✅ Registro Concluído com Sucesso!</h4>
+            <p style="margin-top: 8px; margin-bottom: 4px; color: #f1f5f9;"><strong>Razão Social:</strong> {razao_social}</p>
+            <p style="margin-bottom: 4px; color: #f1f5f9;"><strong>CNPJ:</strong> {dados.get('cnpj')}</p>
+            <p style="margin-bottom: 0; color: #f1f5f9;"><strong>Código DUNS:</strong> <code style="font-size: 16px; background-color: #022c22; padding: 2px 8px; border-radius: 4px; color: #6ee7b7;">{duns_numero}</code></p>
         </div>
         ''', unsafe_allow_html=True)
