@@ -1,9 +1,10 @@
 import streamlit as st
 import requests
+import urllib.parse
 
 # Configuração da página
 st.set_page_config(
-    page_title="Assistente de Cadastro DUNS",
+    page_title="Assistente de Busca DUNS",
     page_icon="🏢",
     layout="centered"
 )
@@ -61,22 +62,14 @@ st.markdown("""
         border-radius: 8px !important;
     }
 
-    .stTextInput>div>div>input {
+    .stTextInput>div>div>input, .stTextArea>div>div>textarea {
         background-color: #1e293b;
         color: #f8fafc;
         border: 1px solid #334155;
         border-radius: 8px;
     }
-    .stTextInput>div>div>input:focus {
+    .stTextInput>div>div>input:focus, .stTextArea>div>div>textarea:focus {
         border-color: #38bdf8;
-    }
-
-    .duns-form-card {
-        background-color: #1e293b;
-        padding: 20px;
-        border-radius: 10px;
-        border: 1px solid #334155;
-        margin-bottom: 20px;
     }
 
     .duns-success-box {
@@ -93,8 +86,8 @@ st.markdown("""
 # Cabeçalho Principal
 st.markdown("""
     <div class="header-container">
-        <div class="header-title">🏢 Assistente de Cadastro DUNS</div>
-        <div class="header-subtitle">Digite o CNPJ para preencher os campos de pesquisa do DUNS automaticamente.</div>
+        <div class="header-title">🏢 Assistente de Busca DUNS</div>
+        <div class="header-subtitle">Consulte dados cadastrais automaticamente e registre anotações de reunião com o cliente.</div>
     </div>
 """, unsafe_allow_html=True)
 
@@ -128,12 +121,12 @@ if btn_consultar and cnpj_input:
         else:
             st.session_state['dados_empresa'] = dados
 
-# Formulario de Pesquisa DUNS gerado na página
+# Formulário de Pesquisa DUNS gerado na página
 if 'dados_empresa' in st.session_state:
     dados = st.session_state['dados_empresa']
     
     st.markdown("---")
-    st.success("✅ **Campos do D-U-N-S Search preenchidos na página!** Use as folhinhas (📋) para copiar rapidamente.")
+    st.success("✅ **Dados carregados com sucesso!** Use as folhinhas (📋) para copiar os campos rapidamente.")
 
     # Extração de dados
     razao_social = dados.get('razao_social', '')
@@ -143,11 +136,12 @@ if 'dados_empresa' in st.session_state:
     municipio = dados.get('municipio', '')
     uf = dados.get('uf', '')
     cep = dados.get('cep', '')
+    cnpj_num = dados.get('cnpj', '')
     
     endereco_linha = f"{logradouro}, {numero} - {bairro}"
 
     # Formulário visual "D-U-N-S Search" dentro da página
-    st.markdown('### 📑 Formulário D-U-N-S Search (Dados Extraídos)')
+    st.markdown('### 📑 Formulário D-U-N-S Search')
     
     st.markdown("**Country:**")
     st.code("Brazil", language=None)
@@ -171,11 +165,11 @@ if 'dados_empresa' in st.session_state:
 
     st.markdown("---")
     
-    # Redirecionamento
+    # Redirecionamento oficial
     url_formulario_duns = "https://support.dnb.com/?CUST=APPLEDEV"
     
     st.markdown("### 🎯 Finalizar Busca no Portal")
-    st.info("Clique no botão abaixo para abrir a tela de validação da D&B:")
+    st.info("Clique no botão abaixo para abrir a tela oficial da D&B:")
     
     st.markdown(f'''
         <a href="{url_formulario_duns}" target="_blank" style="text-decoration: none;">
@@ -191,23 +185,80 @@ if 'dados_empresa' in st.session_state:
                 cursor: pointer;
                 box-shadow: 0 4px 10px rgba(5, 150, 105, 0.3);
                 transition: all 0.2s ease;">
-                🌐 Enviar para a Consulta Oficial (D-U-N-S Search)
+                🌐 Abrir Formulário D-U-N-S Search (AppleDev)
             </button>
         </a>
     ''', unsafe_allow_html=True)
     
     st.write("")
-    st.write("")
     
-    # Registro final
-    duns_numero = st.text_input("Número DUNS retornado:", placeholder="Cole o código DUNS encontrado aqui para registrar...")
+    # Registro do DUNS
+    duns_numero = st.text_input("Número DUNS retornado:", placeholder="Cole o código DUNS retornado para registrar...")
     
     if duns_numero:
         st.markdown(f'''
         <div class="duns-success-box">
             <h4 style="margin:0; color: #a7f3d0;">✅ Registro Concluído com Sucesso!</h4>
             <p style="margin-top: 8px; margin-bottom: 4px; color: #f1f5f9;"><strong>Razão Social:</strong> {razao_social}</p>
-            <p style="margin-bottom: 4px; color: #f1f5f9;"><strong>CNPJ:</strong> {dados.get('cnpj')}</p>
+            <p style="margin-bottom: 4px; color: #f1f5f9;"><strong>CNPJ:</strong> {cnpj_num}</p>
             <p style="margin-bottom: 0; color: #f1f5f9;"><strong>Código DUNS:</strong> <code style="font-size: 16px; background-color: #022c22; padding: 2px 8px; border-radius: 4px; color: #6ee7b7;">{duns_numero}</code></p>
         </div>
         ''', unsafe_allow_html=True)
+
+    st.markdown("---")
+    
+    # Seção: Anotações de Reunião com o Cliente
+    st.markdown("### 📝 Anotações da Reunião")
+    anotacao_texto = st.text_area(
+        "Escreva aqui os pontos alinhados durante a reunião:",
+        placeholder="Ex: Cliente confirmou o endereço atualizado. DUNS em análise pela equipe técnica...",
+        height=130
+    )
+
+    if anotacao_texto:
+        duns_status = duns_numero if duns_numero else "Pendente / Em busca"
+        mensagem_resumo = f"*Resumo da Consulta - Assistente de Busca DUNS*\n\n*Empresa:* {razao_social}\n*CNPJ:* {cnpj_num}\n*Status DUNS:* {duns_status}\n\n*Anotações da Reunião:*\n{anotacao_texto}"
+        
+        st.markdown("**Copiar Anotação Completa:**")
+        st.code(mensagem_resumo, language=None)
+        
+        msg_encoded = urllib.parse.quote(mensagem_resumo)
+        subject_encoded = urllib.parse.quote(f"Anotações DUNS - {razao_social}")
+        
+        link_whatsapp = f"https://api.whatsapp.com/send?text={msg_encoded}"
+        link_email = f"mailto:?subject={subject_encoded}&body={msg_encoded}"
+        
+        col_wsp, col_mail = st.columns(2)
+        with col_wsp:
+            st.markdown(f'''
+                <a href="{link_whatsapp}" target="_blank" style="text-decoration: none;">
+                    <button style="
+                        width: 100%;
+                        background-color: #25D366;
+                        color: white;
+                        padding: 10px;
+                        font-weight: 600;
+                        border: none;
+                        border-radius: 8px;
+                        cursor: pointer;">
+                        💬 Compartilhar via WhatsApp
+                    </button>
+                </a>
+            ''', unsafe_allow_html=True)
+            
+        with col_mail:
+            st.markdown(f'''
+                <a href="{link_email}" target="_blank" style="text-decoration: none;">
+                    <button style="
+                        width: 100%;
+                        background-color: #ea4335;
+                        color: white;
+                        padding: 10px;
+                        font-weight: 600;
+                        border: none;
+                        border-radius: 8px;
+                        cursor: pointer;">
+                        ✉️ Enviar por E-mail
+                    </button>
+                </a>
+            ''', unsafe_allow_html=True)
