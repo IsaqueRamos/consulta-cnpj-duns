@@ -3,7 +3,7 @@ import requests
 import urllib.parse
 
 st.set_page_config(
-    page_title="Consulta CNPJ & DUNS",
+    page_title="Consulta DUNS por CNPJ",
     page_icon="🏢",
     layout="centered"
 )
@@ -30,13 +30,15 @@ st.markdown('''
     </style>
 ''', unsafe_allow_html=True)
 
-st.title("🏢 Consulta de CNPJ para Número DUNS")
-st.markdown("Digite o CNPJ da empresa para buscar automaticamente o endereço completo e facilitar a localização do número DUNS.")
+st.title("🏢 Localizador de DUNS via CNPJ")
+st.markdown("Digite o CNPJ abaixo para extrair os dados e consultar a base da Dun & Bradstreet.")
 
 st.divider()
 
-cnpj_input = st.text_input("Número do CNPJ", placeholder="Digite apenas números (ex: 00000000000191)", max_chars=18)
-btn_consultar = st.button("🔍 Consultar CNPJ")
+cnpj_input = st.text_input("Número do CNPJ", placeholder="Digite apenas números (ex: 32655738000183)", max_chars=18)
+
+# Botão renomeado conforme solicitado
+btn_consultar = st.button("🔍 Consultar DUNS")
 
 def consultar_cnpj(cnpj):
     cnpj_limpo = ''.join(filter(str.isdigit, cnpj))
@@ -56,7 +58,7 @@ def consultar_cnpj(cnpj):
         return None, f"Falha na conexão: {str(e)}"
 
 if btn_consultar and cnpj_input:
-    with st.spinner("Buscando dados cadastrais e endereço do CNPJ..."):
+    with st.spinner("Buscando dados cadastrais e preparando consulta..."):
         dados, erro = consultar_cnpj(cnpj_input)
         if erro:
             st.error(erro)
@@ -65,13 +67,13 @@ if btn_consultar and cnpj_input:
 
 if 'dados_empresa' in st.session_state:
     dados = st.session_state['dados_empresa']
-    st.success("✅ Dados da empresa encontrados com sucesso!")
+    st.success("✅ CNPJ localizado com sucesso!")
     
-    st.subheader("📌 Dados Cadastrais & Endereço Completo")
+    # Exibição compacta dos dados para conferência
+    st.subheader("📌 Dados da Empresa")
     col_a, col_b = st.columns(2)
     with col_a:
         st.write(f"**Razão Social:** {dados.get('razao_social', 'N/A')}")
-        st.write(f"**Nome Fantasia:** {dados.get('nome_fantasia', 'N/A')}")
         st.write(f"**CNPJ:** {dados.get('cnpj', 'N/A')}")
     
     with col_b:
@@ -82,28 +84,39 @@ if 'dados_empresa' in st.session_state:
         uf = dados.get('uf', '')
         cep = dados.get('cep', '')
         
-        endereco_completo = f"{logradouro}, {numero} - {bairro}, {municipio} - {uf}, CEP: {cep}"
+        endereco_completo = f"{logradouro}, {numero} - {bairro}, {municipio}/{uf} - CEP: {cep}"
         st.write(f"**Endereço:** {endereco_completo}")
     
     st.divider()
-    st.subheader("🎯 Localizador de DUNS")
     
-    termo_busca = urllib.parse.quote(f"Dun Bradstreet DUNS {dados.get('razao_social')} {municipio} {uf}")
-    url_busca_dnb = f"https://www.google.com/search?q={termo_busca}"
+    # Ajuste preciso da busca para apontar para o diretório de dados oficiais
+    cnpj_formatado = dados.get('cnpj', '')
+    razao_social = dados.get('razao_social', '')
     
-    st.info("💡 Clique no botão abaixo para abrir a pesquisa direta do DUNS para esta empresa com a Razão Social e Endereço exatos pré-configurados.")
+    # URL refinada forcando busca exata por CNPJ/DUNS nos sites de consulta comercial
+    termo_busca = urllib.parse.quote(f'"{cnpj_formatado}" OR "{razao_social}" site:dnb.com OR site:cialdnb.com OR site:crivo.com.br')
+    url_busca_precisa = f"https://www.google.com/search?q={termo_busca}"
     
-    st.markdown(f'<a href="{url_busca_dnb}" target="_blank"><button style="width:100%; background-color:#198754; color:white; padding:12px; font-weight:bold; border:none; border-radius:8px; cursor:pointer;">🌐 Abrir Busca Direta do DUNS (Endereço Pronto)</button></a>', unsafe_allow_html=True)
+    st.subheader("🎯 Resultado DUNS")
+    st.info("O botão abaixo redireciona com o CNPJ e a Razão Social exatos configurados para localizar o registro da empresa na Cial Dun & Bradstreet:")
+    
+    st.markdown(f'''
+        <a href="{url_busca_precisa}" target="_blank">
+            <button style="width:100%; background-color:#198754; color:white; padding:12px; font-weight:bold; border:none; border-radius:8px; cursor:pointer;">
+                🔗 Abrir Registro da Empresa no Portal D&B
+            </button>
+        </a>
+    ''', unsafe_allow_html=True)
     
     st.write("")
-    duns_numero = st.text_input("Número DUNS localizado:", placeholder="Cole o DUNS aqui para confirmar")
+    duns_numero = st.text_input("Número DUNS retornado:", placeholder="Cole o número DUNS encontrado para registrar")
     
     if duns_numero:
         st.markdown(f'''
         <div class="duns-box">
-            <h4>✅ Registro Finalizado!</h4>
-            <p><strong>Empresa:</strong> {dados.get('razao_social')}</p>
-            <p><strong>CNPJ:</strong> {dados.get('cnpj')}</p>
+            <h4>✅ Registro Concluído</h4>
+            <p><strong>Empresa:</strong> {razao_social}</p>
+            <p><strong>CNPJ:</strong> {cnpj_formatado}</p>
             <p><strong>Número DUNS:</strong> <code>{duns_numero}</code></p>
         </div>
         ''', unsafe_allow_html=True)
